@@ -16,16 +16,6 @@ common-deploy-options: &common-deploy-options
   concurrency: 1
 
 steps:
-  - label: 'Test'
-    agents:
-      docker: 'true'
-    commands:
-      - .buildkite/run_tests.sh
-    key: test
-    plugins:
-      - cultureamp/aws-assume-role#v0.1.0:
-          role: arn:aws:iam::530261158904:role/buildkite-$BUILDKITE_PIPELINE_SLUG
-
   - label: 'Compile application package'
     agents:
       docker: 'true'
