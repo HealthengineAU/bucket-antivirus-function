@@ -16,7 +16,7 @@ common-deploy-options: &common-deploy-options
   concurrency: 1
 
 steps:
-  - label: 'Compile application package'
+  - label: ':box: Compile application package'
     agents:
       docker: 'true'
     artifact_paths:
