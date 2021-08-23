@@ -2,21 +2,22 @@ steps:
   - label: ':hammer: Building the lambda zip'
     agents:
       docker: 'true'
-    artifact_paths:
-      - build/lambda.zip
     commands:
       - make all
     key: build
     plugins:
       - cultureamp/aws-assume-role#v0.1.0:
           role: arn:aws:iam::530261158904:role/buildkite-$BUILDKITE_PIPELINE_SLUG
+      - artifacts#v1.3.0:
+          upload:
+            - build/lambda.zip
 
   - label: ':s3: Upload it to S3 (hetest)'
     agents:
       docker: 'true'
     branches: master test-*
     concurrency: 1
-    command: .buildkite/deploy.sh hetest $BUILDKITE_BUILD_NUMBER
+    command: aws s3 cp build/lambda.zip s3://hetest-s3-antivirus-lambda-code/bucket-antivirus-function-$BUILDKITE_BUILD_NUMBER.zip
     concurrency_group: $BUILDKITE_PIPELINE_SLUG/deploy-hetest
     depends_on:
       - build
@@ -24,13 +25,16 @@ steps:
     plugins:
       - cultureamp/aws-assume-role#v0.1.0:
           role: arn:aws:iam::530261158904:role/buildkite-$BUILDKITE_PIPELINE_SLUG
+      - artifacts#v1.3.0:
+          download:
+            - build/lambda.zip
 
   - label: ':s3: Upload it to S3 (heaws)'
     agents:
       docker: 'true'
     branches: master
     concurrency: 1
-    command: .buildkite/deploy.sh heaws $BUILDKITE_BUILD_NUMBER
+    command: aws s3 cp build/lambda.zip s3://heaws-s3-antivirus-lambda-code/bucket-antivirus-function-$BUILDKITE_BUILD_NUMBER.zip
     concurrency_group: $BUILDKITE_PIPELINE_SLUG/deploy-heaws
     depends_on:
       - build
@@ -39,3 +43,6 @@ steps:
     plugins:
       - cultureamp/aws-assume-role#v0.1.0:
           role: arn:aws:iam::340978087534:role/buildkite-$BUILDKITE_PIPELINE_SLUG
+      - artifacts#v1.3.0:
+          download:
+            - build/lambda.zip
