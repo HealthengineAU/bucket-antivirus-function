@@ -32,7 +32,7 @@ steps:
   - label: ':s3: Upload it to S3 (heaws)'
     agents:
       docker: 'true'
-    branches: master
+    branches: master test-*
     concurrency: 1
     command: aws s3 cp build/lambda.zip s3://heaws-s3-antivirus-lambda-code/bucket-antivirus-function-$BUILDKITE_BUILD_NUMBER.zip
     concurrency_group: $BUILDKITE_PIPELINE_SLUG/deploy-heaws
@@ -45,4 +45,4 @@ steps:
           role: arn:aws:iam::340978087534:role/buildkite-$BUILDKITE_PIPELINE_SLUG
       - artifacts#v1.3.0:
           download:
-            - build/lambda.zip
+            - build/*
