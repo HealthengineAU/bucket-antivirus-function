@@ -34,7 +34,7 @@ steps:
       docker: 'true'
     branches: master test-*
     concurrency: 1
-    command: aws s3 cp build/lambda.zip s3://heaws-s3-antivirus-lambda-code/bucket-antivirus-function-$BUILDKITE_BUILD_NUMBER.zip
+    command: aws s3 cp s3://hetest-buildkite-artifacts/bucket-antivirus-function/0a4db110-6c03-4f3f-8eb5-4613cf829c20/build/lambda.zip .
     concurrency_group: $BUILDKITE_PIPELINE_SLUG/deploy-heaws
     depends_on:
       - build
@@ -43,6 +43,6 @@ steps:
     plugins:
       - cultureamp/aws-assume-role#v0.1.0:
           role: arn:aws:iam::340978087534:role/buildkite-$BUILDKITE_PIPELINE_SLUG
-      - artifacts#v1.3.0:
-          download:
-            - build/*
+      # - artifacts#v1.3.0:
+      #     download:
+      #       - build/lambda.zip
