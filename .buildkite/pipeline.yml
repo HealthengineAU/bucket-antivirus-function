@@ -1,20 +1,3 @@
-env:
-  DOCKER_BUILD_TAG: bk-$BUILDKITE_BRANCH-$BUILDKITE_BUILD_NUMBER
-  ECR_REPO_URL: 340978087534.dkr.ecr.ap-southeast-2.amazonaws.com/$BUILDKITE_PIPELINE_SLUG
-
-docker-env: &docker-env
-  environment:
-    - AWS_ACCESS_KEY_ID
-    - AWS_SECRET_ACCESS_KEY
-    - AWS_SECURITY_TOKEN
-    - AWS_SESSION_TOKEN
-
-common-deploy-options: &common-deploy-options
-  agents:
-    docker: 'true'
-  branches: master
-  concurrency: 1
-
 steps:
   - label: ':hammer: Building the lambda zip'
     agents:
