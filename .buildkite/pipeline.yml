@@ -1,0 +1,41 @@
+steps:
+  - label: ':hammer: Building the lambda zip'
+    agents:
+      docker: 'true'
+    artifact_paths:
+      - build/lambda.zip
+    commands:
+      - make all
+    key: build
+    plugins:
+      - cultureamp/aws-assume-role#v0.1.0:
+          role: arn:aws:iam::530261158904:role/buildkite-$BUILDKITE_PIPELINE_SLUG
+
+  - label: ':s3: Upload it to S3 (hetest)'
+    agents:
+      docker: 'true'
+    branches: master test-*
+    concurrency: 1
+    command: .buildkite/deploy.sh hetest $BUILDKITE_BUILD_NUMBER
+    concurrency_group: $BUILDKITE_PIPELINE_SLUG/deploy-hetest
+    depends_on:
+      - build
+    key: deploy_test
+    plugins:
+      - cultureamp/aws-assume-role#v0.1.0:
+          role: arn:aws:iam::530261158904:role/buildkite-$BUILDKITE_PIPELINE_SLUG
+
+  - label: ':s3: Upload it to S3 (heaws)'
+    agents:
+      docker: 'true'
+    branches: master
+    concurrency: 1
+    command: .buildkite/deploy.sh heaws $BUILDKITE_BUILD_NUMBER
+    concurrency_group: $BUILDKITE_PIPELINE_SLUG/deploy-heaws
+    depends_on:
+      - build
+      - deploy_test
+    key: deploy_prod
+    plugins:
+      - cultureamp/aws-assume-role#v0.1.0:
+          role: arn:aws:iam::340978087534:role/buildkite-$BUILDKITE_PIPELINE_SLUG
