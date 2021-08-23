@@ -20,7 +20,7 @@ steps:
     agents:
       docker: 'true'
     commands:
-      - make test
+      - .buildkite/run_tests.sh
     key: test
     plugins:
       - cultureamp/aws-assume-role#v0.1.0:
