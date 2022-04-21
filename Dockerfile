@@ -22,56 +22,39 @@ RUN rm -rf /root/.cache/pip
 # Download libraries we need to run in lambda
 WORKDIR /tmp
 RUN yumdownloader -x \*i686 --archlist=x86_64 \
-  binutils \
-  bzip2-libs \
   clamav \
   clamav-lib \
   clamav-scanner-systemd \
   clamav-update \
   elfutils-libs \
-  gnutls \
   json-c \
-  libgcrypt \
-  libgpg-error\
-  libprelude \
-  libtasn1 \
-  libtool-ltdl \
-  libxml2 \
   lz4 \
-  nettle \
   pcre2 \
-  systemd-libs \
-  xz-libs
-
-RUN rpm2cpio binutils-*.rpm | cpio -idmv
-RUN rpm2cpio bzip2-libs-*.rpm | cpio -idmv
+  libprelude \
+  gnutls \
+  libtasn1 \
+  nettle \
+  systemd-libs
 RUN rpm2cpio clamav-0*.rpm | cpio -idmv
 RUN rpm2cpio clamav-lib*.rpm | cpio -idmv
 RUN rpm2cpio clamav-update*.rpm | cpio -idmv
 RUN rpm2cpio clamd-0*.rpm | cpio -idmv
 RUN rpm2cpio elfutils-libs*.rpm | cpio -idmv
-RUN rpm2cpio gnutls*.rpm | cpio -idmv
 RUN rpm2cpio json-c*.rpm | cpio -idmv
-RUN rpm2cpio libprelude*.rpm | cpio -idmv
-RUN rpm2cpio libgcrypt*.rpm | cpio -idmv
-RUN rpm2cpio libgpg-error*.rpm | cpio -idmv
-RUN rpm2cpio libtasn1*.rpm | cpio -idmv
-RUN rpm2cpio libtool-ltdl*.rpm | cpio -idmv
-RUN rpm2cpio libxml2*.rpm | cpio -idmv
 RUN rpm2cpio lz4*.rpm | cpio -idmv
 RUN rpm2cpio pcre*.rpm | cpio -idmv
+RUN rpm2cpio libprelude*.rpm | cpio -idmv
+RUN rpm2cpio gnutls*.rpm | cpio -idmv
+RUN rpm2cpio libtasn1*.rpm | cpio -idmv
 RUN rpm2cpio nettle*.rpm | cpio -idmv
 RUN rpm2cpio systemd-libs*.rpm | cpio -idmv
-RUN rpm2cpio xz-libs*.rpm | cpio -idmv
 
 # Copy over the binaries and libraries
 RUN cp -r /tmp/usr/bin/clamdscan \
        /tmp/usr/sbin/clamd \
        /tmp/usr/bin/freshclam \
        /tmp/usr/lib64/* \
-       /tmp/lib64/* \
-       /opt/app/bin/ \
-    && cp /tmp/usr/bin/ld.bfd /opt/app/bin/ld
+       /opt/app/bin/
 
 RUN echo "DatabaseDirectory /tmp/clamav_defs" > /opt/app/bin/scan.conf
 RUN echo "PidFile /tmp/clamd.pid" >> /opt/app/bin/scan.conf
