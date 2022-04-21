@@ -31,7 +31,6 @@ RUN yumdownloader -x \*i686 --archlist=x86_64 \
   elfutils-libs \
   gnutls \
   json-c \
-  lib64nettle \
   libgcrypt \
   libgpg-error\
   libprelude \
@@ -70,6 +69,7 @@ RUN cp -r /tmp/usr/bin/clamdscan \
        /tmp/usr/sbin/clamd \
        /tmp/usr/bin/freshclam \
        /tmp/usr/lib64/* \
+       /tmp/lib64/* \
        /opt/app/bin/ \
     && cp /tmp/usr/bin/ld.bfd /opt/app/bin/ld
 
