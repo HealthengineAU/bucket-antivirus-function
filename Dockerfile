@@ -12,7 +12,7 @@ COPY requirements.txt /opt/app/requirements.txt
 
 # Install packages
 RUN yum update -y
-RUN yum install -y binutils bzip2 cpio python3-pip yum-utils zip unzip less
+RUN yum install -y cpio python3-pip yum-utils zip unzip less
 RUN yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
 # This had --no-cache-dir, tracing through multiple tickets led to a problem in wheel
@@ -22,6 +22,8 @@ RUN rm -rf /root/.cache/pip
 # Download libraries we need to run in lambda
 WORKDIR /tmp
 RUN yumdownloader -x \*i686 --archlist=x86_64 \
+  binutils \
+  bzip2-libs \
   clamav \
   clamav-lib \
   clamav-scanner-systemd \
@@ -35,6 +37,8 @@ RUN yumdownloader -x \*i686 --archlist=x86_64 \
   libtasn1 \
   nettle \
   systemd-libs
+RUN rpm2cpio binutils-*.rpm | cpio -idmv
+RUN rpm2cpio bzip2-libs-*.rpm | cpio -idmv
 RUN rpm2cpio clamav-0*.rpm | cpio -idmv
 RUN rpm2cpio clamav-lib*.rpm | cpio -idmv
 RUN rpm2cpio clamav-update*.rpm | cpio -idmv
@@ -54,7 +58,8 @@ RUN cp -r /tmp/usr/bin/clamdscan \
        /tmp/usr/sbin/clamd \
        /tmp/usr/bin/freshclam \
        /tmp/usr/lib64/* \
-       /opt/app/bin/
+       /opt/app/bin/ \
+    && cp /tmp/usr/bin/ld.bfd /opt/app/bin/ld
 
 RUN echo "DatabaseDirectory /tmp/clamav_defs" > /opt/app/bin/scan.conf
 RUN echo "PidFile /tmp/clamd.pid" >> /opt/app/bin/scan.conf
