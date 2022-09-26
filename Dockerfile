@@ -55,6 +55,8 @@ RUN cp -r /tmp/usr/bin/clamdscan \
        /tmp/usr/bin/freshclam \
        /tmp/usr/lib64/* \
        /opt/app/bin/
+       
+RUN cp /usr/lib64/libpcre.so.1.2.0 /opt/app/bin/libpcre.so.1       
 
 RUN echo "DatabaseDirectory /tmp/clamav_defs" > /opt/app/bin/scan.conf
 RUN echo "PidFile /tmp/clamd.pid" >> /opt/app/bin/scan.conf
