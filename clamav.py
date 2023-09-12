@@ -41,6 +41,7 @@ from common import (
     create_dir,
 )
 
+
 def update_defs_from_s3(s3_client, bucket, prefix):
     create_dir(AV_DEFINITION_PATH)
     to_download = {}
