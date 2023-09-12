@@ -6,6 +6,7 @@ ARG clamav_version=0.104.2
 RUN mkdir -p /opt/app
 RUN mkdir -p /opt/app/build
 RUN mkdir -p /opt/app/bin/
+RUN mkdir -p /opt/app/python_modules
 
 # Copy in the lambda source
 WORKDIR /opt/app
@@ -17,7 +18,7 @@ RUN apt-get -qq update
 RUN apt-get -qq --no-install-recommends install zip
 
 # This had --no-cache-dir, tracing through multiple tickets led to a problem in wheel
-RUN pip3 install -r requirements.txt
+RUN pip3 install -r requirements.txt --target /opt/app/python_modules
 RUN rm -rf /root/.cache/pip
 
 # Download libraries we need to run in lambda
@@ -47,18 +48,7 @@ RUN echo "CompressLocalDatabase yes" >> /opt/app/bin/freshclam.conf
 WORKDIR /opt/app
 RUN zip -r9 --exclude="*test*" /opt/app/build/lambda.zip *.py bin
 
-WORKDIR /usr/local/lib/python3.9/site-packages
-RUN zip -r9 /opt/app/build/lambda.zip * \
-      --exclude \
-        '_distutils_hack/*' \
-        distutils-precedence.pth \
-        'pip/*' \
-        'pip-*.dist-info/*' \
-        'pkg_resources/*' \
-        README.txt \
-        'setuptools/*' \
-        'setuptools-*.dist-info/*' \
-        'wheel/*' \
-        'wheel-*.dist-info/*'
+WORKDIR /opt/app/python_modules
+RUN zip -r9 /opt/app/build/lambda.zip *
 
 WORKDIR /opt/app
