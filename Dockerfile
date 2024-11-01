@@ -1,25 +1,12 @@
-FROM python:3.9
+FROM artifactory.aws.wiley.com/docker/amazonlinux:2023 as clamav
 
 ARG clamav_version=1.0.3
 
+RUN yum update -y
+RUN yum install -y cpio wget
+
 # Set up working directories
-RUN mkdir -p /opt/app
-RUN mkdir -p /opt/app/build
 RUN mkdir -p /opt/app/bin/
-RUN mkdir -p /opt/app/python_modules
-
-# Copy in the lambda source
-WORKDIR /opt/app
-COPY ./*.py /opt/app/
-COPY requirements.txt /opt/app/requirements.txt
-
-# Install packages
-RUN apt-get -qq update
-RUN apt-get -qq --no-install-recommends install zip
-
-# This had --no-cache-dir, tracing through multiple tickets led to a problem in wheel
-RUN pip3 install -r requirements.txt --target /opt/app/python_modules
-RUN rm -rf /root/.cache/pip
 
 # Download libraries we need to run in lambda
 WORKDIR /tmp
@@ -44,11 +31,31 @@ RUN echo "FixStaleSocket yes" >> /opt/app/bin/scan.conf
 RUN echo "DatabaseMirror database.clamav.net" > /opt/app/bin/freshclam.conf
 RUN echo "CompressLocalDatabase yes" >> /opt/app/bin/freshclam.conf
 
+FROM artifactory.aws.wiley.com/docker/amazonlinux:2023
+
+ARG dist=/opt/app
+
+# Install packages
+RUN yum update -y
+RUN yum install -y python3-pip yum-utils less zip
+
+# Copy in the lambda source
+RUN mkdir -p $dist/build
+COPY --from=clamav /opt/app/bin /opt/app/bin
+COPY ./*.py $dist/
+COPY requirements.txt $dist/requirements.txt
+
+# This had --no-cache-dir, tracing through multiple tickets led to a problem in wheel
+WORKDIR $dist
+RUN pip3 install -r requirements.txt
+RUN rm -rf /root/.cache/pip
+
 # Create the zip file
-WORKDIR /opt/app
-RUN zip -r9 --exclude="*test*" /opt/app/build/lambda.zip *.py bin
+RUN zip -r9 --exclude="*test*" $dist/build/lambda.zip *.py bin
 
-WORKDIR /opt/app/python_modules
-RUN zip -r9 /opt/app/build/lambda.zip *
+WORKDIR /usr/local/lib/python3.9/site-packages
+RUN zip -r9 $dist/build/lambda.zip *
+WORKDIR /usr/local/lib64/python3.9/site-packages
+RUN zip -r9 $dist/build/lambda.zip *
 
-WORKDIR /opt/app
+WORKDIR $dist
