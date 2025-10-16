@@ -23,7 +23,6 @@ import errno
 
 import boto3
 import botocore
-from pytz import utc
 
 from common import AV_DEFINITION_S3_BUCKET
 from common import AV_DEFINITION_S3_PREFIX
@@ -106,7 +105,7 @@ def update_defs_from_freshclam(path, library_path=""):
     create_dir(path)
     fc_env = os.environ.copy()
     if library_path:
-        fc_env["LD_LIBRARY_PATH"] += f":{CLAMAVLIB_PATH}"
+        fc_env["LD_LIBRARY_PATH"] += library_path
     print("Starting freshclam with defs in %s." % path)
     fc_proc = subprocess.Popen(
         [
@@ -160,7 +159,7 @@ def time_from_s3(s3_client, bucket, key):
     except botocore.exceptions.ClientError as e:
         expected_errors = {"404", "AccessDenied", "NoSuchKey"}
         if e.response["Error"]["Code"] in expected_errors:
-            return datetime.datetime.fromtimestamp(0, utc)
+            return datetime.datetime.fromtimestamp(0, datetime.UTC)
         else:
             raise
     return time

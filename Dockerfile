@@ -1,12 +1,9 @@
-FROM python:3.9
+FROM python:3.12
 
-ARG clamav_version=0.104.2
+ARG clamav_version=1.4.3
 
 # Set up working directories
-RUN mkdir -p /opt/app
-RUN mkdir -p /opt/app/build
-RUN mkdir -p /opt/app/bin/
-RUN mkdir -p /opt/app/python_modules
+RUN mkdir -p /opt/app/bin /opt/app/build /opt/app/python_modules
 
 # Copy in the lambda source
 WORKDIR /opt/app
@@ -26,6 +23,7 @@ WORKDIR /tmp
 RUN wget https://www.clamav.net/downloads/production/clamav-${clamav_version}.linux.x86_64.deb -O clamav.deb -U "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0" --no-verbose
 
 RUN dpkg-deb -R clamav.deb /tmp
+RUN strip /tmp/usr/local/lib/libclamav_rust.a
 
 # Copy over the binaries and libraries
 RUN cp -r /tmp/usr/local/bin/clamdscan \
