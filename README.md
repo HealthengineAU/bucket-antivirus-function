@@ -6,8 +6,8 @@ Scan new objects added to any s3 bucket using AWS Lambda. [more details in this 
 
 This was forked from https://github.com/wiley/bucket-antivirus-function
 
-The upstream project hasn't been updated in quite a while and still expects a Python 3.7 environment that AWS has deprecated.
-Our fork has been updated to work with Python 3.9
+The upstream project has updated to Python 3.12 as well.
+However they have moved to needing Kafka, so rather than track that, incorporate their changes that allow us to get to Python 3.12
 
 ### SSL CA Certificate
 
@@ -16,8 +16,9 @@ Therefore `freshclam` will fail to download virus definition updates since it do
 
 The `certifi` Python module defined in `requirements.txt` contains a CA certificate bundle.
 The fix is to make sure the Lambda is deployed with the `CURL_CA_BUNDLE` environment variable set to `/var/task/certifi/cacert.pem`
+We do this in the `k8s` repository that deploys the ZIP file produced by this repository.
 
-NOTE: Your Lambda ZIP gets unpack in the `/var/task/` directory.
+NOTE: Your Lambda ZIP gets unpacked in the `/var/task/` directory.
 
 ### Improvements
 
@@ -27,12 +28,6 @@ If it turns out that the upstream project is never going to be updated and we ne
 Then the `Dockerfile` should be changed so that the libraries that get unpacked to `/tmp/usr/local/lib/lib*` end up in a
 top-level `/lib` directory in the ZIP file instead of being below `/bin`.
 The AWS Lambda environment includes `/var/task/lib` in its `LD_LIBRARY_PATH`.
-
-- To go beyond Python 3.9 it might be a case of just needing to make sure the modules are `requirements.txt` are updated.
-With the current versions of the modules newer Python versions result in the following error:
-```
-[ERROR] Runtime.ImportModuleError: Unable to import module 'scan': cannot import name 'Iterable' from 'collections' (/var/lang/lib/python3.11/collections/__init__.py)
-```
 
 ## Features
 
@@ -56,7 +51,6 @@ extracted and the files inside scanned also
 - The objects tags are updated to reflect the result of the scan, CLEAN
 or INFECTED, along with the date and time of the scan.
 - Object metadata is updated to reflect the result of the scan (optional)
-- Metrics are sent to [DataDog](https://www.datadoghq.com/) (optional)
 - Scan results are published to a SNS topic (optional) (Optionally choose to only publish INFECTED results)
 - Files found to be INFECTED are automatically deleted (optional)
 
